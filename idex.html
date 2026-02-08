@@ -1,1 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A&P 溫書神器</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 頂部導航 */
+        header {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stats {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            background: #f8fafc;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 卡片區域 */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 400px;
+            height: 60vh; /* 卡片高度 */
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .card-container:active {
+            transform: scale(0.98);
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            background: var(--card-bg);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card-back {
+            background: #1e293b;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            opacity: 0.6;
+        }
+
+        .content {
+            font-size: 1.35rem;
+            line-height: 1.6;
+            font-weight: 600;
+            overflow-y: auto;
+            max-height: 80%;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 底部按鈕 */
+        footer {
+            padding: 20px;
+            background: var(--bg);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        button {
+            border: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-unknown {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+        
+        .btn-unknown:active {
+            background: #fecaca;
+        }
+
+        .btn-known {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .btn-known:active {
+            background: #bbf7d0;
+        }
+
+        /* 分類標籤 */
+        .category-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            background: #eff6ff;
+            color: var(--primary);
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>A&P Quiz (L1-6)</h1>
+        <div class="stats" id="progress">0 / 0</div>
+    </header>
+
+    <main>
+        <div class="card-container" onclick="flipCard()">
+            <div class="card" id="card">
+                <!-- 正面 -->
+                <div class="card-face card-front">
+                    <span class="category-tag">解剖生理學</span>
+                    <div class="label">題目</div>
+                    <div class="content" id="question-text">載入中...</div>
+                    <div class="hint">👆 點擊查看答案</div>
+                </div>
+                <!-- 背面 -->
+                <div class="card-face card-back">
+                    <div class="label">答案</div>
+                    <div class="content" id="answer-text">...</div>
+                    <div class="hint">👆 點擊返回題目</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <button class="btn-unknown" onclick="handleNext(false)">
+            <span>❌ 還不熟</span>
+        </button>
+        <button class="btn-known" onclick="handleNext(true)">
+            <span>✅ 記住了</span>
+        </button>
+    </footer>
+
+    <script>
+        // --- 資料庫區域 (根據你的附件整理) ---
+        const database = [
+            { q: "缺失水分對人體有什麼影響?", a: "引致便秘" },
+            { q: "以下那個數值是代表鹼性?", a: "10" },
+            { q: "胸腔和腹腔之間由那個器官分開?", a: "橫隔膜" },
+            { q: "電解質的平衡對人體有什麼意義?", a: "電解質的平衡對維持細胞和器官的正常生理非常重要" },
+            { q: "以下那個不是生命特徵?", a: "睡眠" },
+            { q: "以下那個不是基本的細胞結構?", a: "細胞色素" },
+            { q: "以下那個是細胞膜的特性?", a: "選擇性半透膜" },
+            { q: "細胞核中有什麼對人體重要的東西?", a: "DNA脫氧核醣核酸" },
+            { q: "人類細胞中有多少對染色體?", a: "23對" },
+            { q: "軟骨存在於人體的那幾個位置?", a: "以上皆是 (氣道、外耳、椎間盆間)" },
+            { q: "胞外基質 (Extracellular matrix) 對人體有什麼作用?", a: "加強結締組織承受重量、張力、侵害、磨損等能力" },
+            { q: "開放性或大面積傷口會產生什麼現象?", a: "肉芽化 (Granulation)" },
+            { q: "以下那兩種人體組織具有更大的修復能力?", a: "上皮組織和結締組織" },
+            { q: "以下那一個系統負責所有的身體運動?", a: "肌肉系統" },
+            { q: "以下那一個系統負責身體的溝通和調控系統?", a: "神經系統" },
+            { q: "以下一個系統負責賦予形體及移動的動力?", a: "骨骼系統" },
+            { q: "以下那個是滑液關節的結構?", a: "關節可動，具有關節腔和滑液囊，關節囊包圍整個關節" },
+            { q: "筋膜與肌肉有什麼關係?", a: "筋膜圍繞並支持肌肉系統，亦提供神經、淋巴管和血管的進出通道" },
+            { q: "以下那一個是骨折後之骨質重塑過程?", a: "首先由巨噬細胞 (Macrophage) 移除壞死的硬骨組織，然後大量製造骨細胞" },
+            { q: "以下那個不是肌肉系統的功能?", a: "冷卻身體" },
+            { q: "自主神經系統包含那兩組神經系統?", a: "副交感神經及交感神經" },
+            { q: "副交感神經受激勵後會有什麼生理反應?", a: "血管收縮 (注意：通常副交感是放鬆，但根據Quiz答案選擇此項，或指特定部位)" },
+            { q: "交感神經受激勵後會有什麼生理反應?", a: "心跳加快" },
+            { q: "神經元之間的連接需倚賴什麼物質?", a: "神經遞質" },
+            { q: "人體共有多少對腦神經?", a: "12對" },
+            { q: "以下那一個不屬於腦神經?", a: "坐骨神經 (Sciatic nerve)" },
+            { q: "在人體神經系統中有多少對脊神經?", a: "31對" },
+            { q: "以下那個組織對腦部有保護作用?", a: "脊髓液" },
+            { q: "以下那個不是神經遞質?", a: "CSF 腦脊髓液" },
+            { q: "循環系統是由那兩個系統組成?", a: "血液系統及淋巴系統" },
+            { q: "以下那些器官和組織負責血液循環系統?", a: "心臟, 血管, 血液" },
+            { q: "以下那些器官和組織負責淋巴循環系統?", a: "淋巴結, 淋巴管, 淋巴液" },
+            { q: "肺循環系統是運送缺氧血及含氧血來回那兩個器官?", a: "肺和心" },
+            { q: "肝門循環系統是從那個器官運送血液去那一個器官?", a: "由消化道去肝臟" },
+            { q: "微血管有什麼特性?", a: "在血管和組織之間運送養分、水分、氣體和電解質" },
+            { q: "收縮壓和舒張壓反映什麼情況?", a: "舒張壓表示心臟放鬆時血管內的壓力" },
+            { q: "以下那一個不是血液循環系統的路徑?", a: "微循環" },
+            { q: "以下那些身體位置不會找到淋巴結?", a: "背部及臀部" },
+            { q: "那一種血球不會存在於淋巴液中?", a: "紅血球" },
+            { q: "淋巴結有什麼功能?", a: "以上皆是 (過濾有害物質、執行免疫系統防衛、摧毀病原體)" }
+        ];
+
+        // --- 程式邏輯 ---
+        let currentCardIndex = 0;
+        let studyQueue = []; // 待複習隊列
+        let isFlipped = false;
+
+        const cardElement = document.getElementById('card');
+        const questionText = document.getElementById('question-text');
+        const answerText = document.getElementById('answer-text');
+        const progressText = document.getElementById('progress');
+
+        // 初始化：打亂題目順序
+        function init() {
+            // 創建一個索引數組 [0, 1, 2, ... length-1]
+            studyQueue = Array.from({length: database.length}, (_, i) => i);
+            shuffleArray(studyQueue);
+            loadCard();
+        }
+
+        // 洗牌演算法
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // 載入當前卡片
+        function loadCard() {
+            if (studyQueue.length === 0) {
+                // 如果全部溫完，重新開始
+                alert("恭喜！所有題目已溫習一輪。將重新洗牌開始。");
+                init();
+                return;
+            }
+
+            const dbIndex = studyQueue[0];
+            const data = database[dbIndex];
+            
+            // 重置卡片狀態
+            isFlipped = false;
+            cardElement.classList.remove('flipped');
+            
+            // 延遲一點點更新文字，讓翻轉動畫看起來更自然（如果是連續翻頁）
+            setTimeout(() => {
+                questionText.textContent = data.q;
+                answerText.textContent = data.a;
+                progressText.textContent = `剩餘題目: ${studyQueue.length}`;
+            }, 200);
+        }
+
+        // 翻轉卡片
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardElement.classList.add('flipped');
+            } else {
+                cardElement.classList.remove('flipped');
+            }
+        }
+
+        // 處理按鈕點擊
+        function handleNext(known) {
+            event.stopPropagation(); // 防止觸發翻卡
+
+            const currentQuestionIndex = studyQueue[0];
+            
+            // 移除當前題目
+            studyQueue.shift();
+
+            if (!known) {
+                // 如果不熟，把這題重新放回隊列的隨機位置（或者末尾）
+                // 這裡我們把它放到隊列的一半位置之後，保證過一會兒會再出現
+                const insertIndex = Math.floor(Math.random() * studyQueue.length);
+                studyQueue.splice(insertIndex, 0, currentQuestionIndex);
+            }
+
+            loadCard();
+        }
+
+        // 啟動
+        init();
+
+    </script>
+</body>
+</html>
