@@ -2,371 +2,725 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>A&P 溫書神器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A&P Quiz App (With Explanations)</title>
+    
+    <!-- 1. 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. 引入 Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- 3. 設定網頁樣式 -->
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --success: #22c55e;
-            --danger: #ef4444;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* 頂部導航 */
-        header {
-            background: var(--card-bg);
-            padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .stats {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            background: #f8fafc;
-            padding: 4px 12px;
-            border-radius: 20px;
-            border: 1px solid #e2e8f0;
-        }
-
-        /* 卡片區域 */
-        main {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            perspective: 1000px;
-        }
-
-        .card-container {
-            width: 100%;
-            max-width: 400px;
-            height: 60vh; /* 卡片高度 */
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .card-container:active {
-            transform: scale(0.98);
-        }
-
-        .card {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-            border-radius: 24px;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .card.flipped {
-            transform: rotateY(180deg);
-        }
-
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-            text-align: center;
-            background: var(--card-bg);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .card-back {
-            background: #1e293b;
-            color: white;
-            transform: rotateY(180deg);
-        }
-
-        .label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-            font-weight: 700;
-            opacity: 0.6;
-        }
-
-        .content {
-            font-size: 1.35rem;
-            line-height: 1.6;
-            font-weight: 600;
-            overflow-y: auto;
-            max-height: 80%;
-        }
-
-        .hint {
-            position: absolute;
-            bottom: 20px;
-            font-size: 0.8rem;
-            opacity: 0.5;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* 底部按鈕 */
-        footer {
-            padding: 20px;
-            background: var(--bg);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        button {
-            border: none;
-            padding: 16px;
-            border-radius: 16px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-unknown {
-            background: #fee2e2;
-            color: var(--danger);
-        }
-        
-        .btn-unknown:active {
-            background: #fecaca;
-        }
-
-        .btn-known {
-            background: #dcfce7;
-            color: var(--success);
-        }
-
-        .btn-known:active {
-            background: #bbf7d0;
-        }
-
-        /* 分類標籤 */
-        .category-tag {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 0.7rem;
-            padding: 4px 8px;
-            background: #eff6ff;
-            color: var(--primary);
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-gray-100">
 
-    <header>
-        <h1>A&P Quiz (L1-6)</h1>
-        <div class="stats" id="progress">0 / 0</div>
-    </header>
+    <div id="root"></div>
 
-    <main>
-        <div class="card-container" onclick="flipCard()">
-            <div class="card" id="card">
-                <!-- 正面 -->
-                <div class="card-face card-front">
-                    <span class="category-tag">解剖生理學</span>
-                    <div class="label">題目</div>
-                    <div class="content" id="question-text">載入中...</div>
-                    <div class="hint">👆 點擊查看答案</div>
-                </div>
-                <!-- 背面 -->
-                <div class="card-face card-back">
-                    <div class="label">答案</div>
-                    <div class="content" id="answer-text">...</div>
-                    <div class="hint">👆 點擊返回題目</div>
-                </div>
-            </div>
-        </div>
-    </main>
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        import { CheckCircle, XCircle, RefreshCw, BookOpen, Award, AlertCircle, CheckSquare, Square, Circle, Disc, Info } from 'https://esm.sh/lucide-react@0.292.0';
+        import { motion, AnimatePresence } from 'https://esm.sh/framer-motion@10.16.4';
 
-    <footer>
-        <button class="btn-unknown" onclick="handleNext(false)">
-            <span>❌ 還不熟</span>
-        </button>
-        <button class="btn-known" onclick="handleNext(true)">
-            <span>✅ 記住了</span>
-        </button>
-    </footer>
-
-    <script>
-        // --- 資料庫區域 (根據你的附件整理) ---
-        const database = [
-            { q: "缺失水分對人體有什麼影響?", a: "引致便秘" },
-            { q: "以下那個數值是代表鹼性?", a: "10" },
-            { q: "胸腔和腹腔之間由那個器官分開?", a: "橫隔膜" },
-            { q: "電解質的平衡對人體有什麼意義?", a: "電解質的平衡對維持細胞和器官的正常生理非常重要" },
-            { q: "以下那個不是生命特徵?", a: "睡眠" },
-            { q: "以下那個不是基本的細胞結構?", a: "細胞色素" },
-            { q: "以下那個是細胞膜的特性?", a: "選擇性半透膜" },
-            { q: "細胞核中有什麼對人體重要的東西?", a: "DNA脫氧核醣核酸" },
-            { q: "人類細胞中有多少對染色體?", a: "23對" },
-            { q: "軟骨存在於人體的那幾個位置?", a: "以上皆是 (氣道、外耳、椎間盆間)" },
-            { q: "胞外基質 (Extracellular matrix) 對人體有什麼作用?", a: "加強結締組織承受重量、張力、侵害、磨損等能力" },
-            { q: "開放性或大面積傷口會產生什麼現象?", a: "肉芽化 (Granulation)" },
-            { q: "以下那兩種人體組織具有更大的修復能力?", a: "上皮組織和結締組織" },
-            { q: "以下那一個系統負責所有的身體運動?", a: "肌肉系統" },
-            { q: "以下那一個系統負責身體的溝通和調控系統?", a: "神經系統" },
-            { q: "以下一個系統負責賦予形體及移動的動力?", a: "骨骼系統" },
-            { q: "以下那個是滑液關節的結構?", a: "關節可動，具有關節腔和滑液囊，關節囊包圍整個關節" },
-            { q: "筋膜與肌肉有什麼關係?", a: "筋膜圍繞並支持肌肉系統，亦提供神經、淋巴管和血管的進出通道" },
-            { q: "以下那一個是骨折後之骨質重塑過程?", a: "首先由巨噬細胞 (Macrophage) 移除壞死的硬骨組織，然後大量製造骨細胞" },
-            { q: "以下那個不是肌肉系統的功能?", a: "冷卻身體" },
-            { q: "自主神經系統包含那兩組神經系統?", a: "副交感神經及交感神經" },
-            { q: "副交感神經受激勵後會有什麼生理反應?", a: "血管收縮 (注意：通常副交感是放鬆，但根據Quiz答案選擇此項，或指特定部位)" },
-            { q: "交感神經受激勵後會有什麼生理反應?", a: "心跳加快" },
-            { q: "神經元之間的連接需倚賴什麼物質?", a: "神經遞質" },
-            { q: "人體共有多少對腦神經?", a: "12對" },
-            { q: "以下那一個不屬於腦神經?", a: "坐骨神經 (Sciatic nerve)" },
-            { q: "在人體神經系統中有多少對脊神經?", a: "31對" },
-            { q: "以下那個組織對腦部有保護作用?", a: "脊髓液" },
-            { q: "以下那個不是神經遞質?", a: "CSF 腦脊髓液" },
-            { q: "循環系統是由那兩個系統組成?", a: "血液系統及淋巴系統" },
-            { q: "以下那些器官和組織負責血液循環系統?", a: "心臟, 血管, 血液" },
-            { q: "以下那些器官和組織負責淋巴循環系統?", a: "淋巴結, 淋巴管, 淋巴液" },
-            { q: "肺循環系統是運送缺氧血及含氧血來回那兩個器官?", a: "肺和心" },
-            { q: "肝門循環系統是從那個器官運送血液去那一個器官?", a: "由消化道去肝臟" },
-            { q: "微血管有什麼特性?", a: "在血管和組織之間運送養分、水分、氣體和電解質" },
-            { q: "收縮壓和舒張壓反映什麼情況?", a: "舒張壓表示心臟放鬆時血管內的壓力" },
-            { q: "以下那一個不是血液循環系統的路徑?", a: "微循環" },
-            { q: "以下那些身體位置不會找到淋巴結?", a: "背部及臀部" },
-            { q: "那一種血球不會存在於淋巴液中?", a: "紅血球" },
-            { q: "淋巴結有什麼功能?", a: "以上皆是 (過濾有害物質、執行免疫系統防衛、摧毀病原體)" }
+        // ---------------------------------------------------------
+        // 資料區：已新增 explanation (書中資訊/詳解) 欄位
+        // ---------------------------------------------------------
+        const fullQuizData = [
+          {
+            id: 1,
+            question: "缺失水分對人體的有什麼影響?",
+            options: ["引起高血壓", "血液難以凝固", "肺功能衰竭", "引致便秘"],
+            correctAnswers: ["引致便秘"],
+            type: "single",
+            category: "生理基礎",
+            explanation: "參考書目 P.25：大腸的主要功能是吸收水分。若身體缺水，大腸會過度吸收糞便中的水分，導致便秘。"
+          },
+          {
+            id: 2,
+            question: "以下那個數值是代表鹼性?",
+            options: ["1", "5", "7", "10"],
+            correctAnswers: ["10"],
+            type: "single",
+            category: "化學基礎",
+            explanation: "pH值 7 為中性，低於 7 為酸性，高於 7 為鹼性。"
+          },
+          {
+            id: 3,
+            question: "胸腔和腹腔之間由那個器官分開?",
+            options: ["胸膜", "腹膜", "橫隔膜", "腦膜"],
+            correctAnswers: ["橫隔膜"],
+            type: "single",
+            category: "解剖結構",
+            explanation: "橫隔膜 (Diaphragm) 是一層肌肉組織，物理上分隔了胸腔與腹腔。"
+          },
+          {
+            id: 10,
+            question: "軟骨存在於人體的那幾個位置? (假設為多選示範)",
+            options: ["氣道", "外耳", "椎間盤間", "以上皆是"],
+            correctAnswers: ["以上皆是"], 
+            type: "single", 
+            category: "組織學",
+            explanation: "軟骨廣泛存在於氣管環(透明軟骨)、耳廓(彈性軟骨)及椎間盤(纖維軟骨)中。"
+          },
+          {
+            id: 4,
+            question: "電解質的平衡對人體有什麼意義?",
+            options: [
+              "電解質的平衡對維持細胞和器官的正常生理非常重要",
+              "電解質的平衡對維持骨骼和肌肉的正常發展非常重要",
+              "電解質的平衡對維持毛髮和指甲的正常生長非常重要",
+              "電解質的平衡對維持皮脂腺和汗腺的正常分泌非常重要"
+            ],
+            correctAnswers: ["電解質的平衡對維持細胞和器官的正常生理非常重要"],
+            type: "single",
+            category: "生理基礎",
+            explanation: "電解質(如鈉、鉀)對於神經傳導、肌肉收縮及體液平衡至關重要。"
+          },
+          {
+            id: 5,
+            question: "以下那個不是生命特徵?",
+            options: ["生殖", "睡眠", "反應性", "同化"],
+            correctAnswers: ["睡眠"],
+            type: "single",
+            category: "生理基礎",
+            explanation: "基本的生命特徵包括代謝、反應性、運動、生長、分化及生殖。睡眠雖然重要，但不是定義生命的必要特徵(例如細菌不睡眠)。"
+          },
+          {
+            id: 6,
+            question: "以下那個不是基本的細胞結構?",
+            options: ["細胞膜", "細胞質", "細胞核", "細胞色素"],
+            correctAnswers: ["細胞色素"],
+            type: "single",
+            category: "細胞學"
+          },
+          {
+            id: 7,
+            question: "以下那個是細胞膜的特性?",
+            options: ["完全防水外膜", "選擇性半透膜", "容許蛋白質自由通過", "不具彈性能固定細胞形狀"],
+            correctAnswers: ["選擇性半透膜"],
+            type: "single",
+            category: "細胞學"
+          },
+          {
+            id: 8,
+            question: "細胞核中有什麼對人體重要的東西?",
+            options: ["FSH促卵泡激素", "DNA脫氧核醣核酸", "RBC紅血球", "ECM細胞外基質"],
+            correctAnswers: ["DNA脫氧核醣核酸"],
+            type: "single",
+            category: "細胞學"
+          },
+          {
+            id: 9,
+            question: "人類細胞中有多少對染色體?",
+            options: ["46", "23", "31", "12"],
+            correctAnswers: ["23"],
+            type: "single",
+            category: "遺傳學"
+          },
+          {
+            id: 11,
+            question: "胞外基質 Extracellular matrix 對人體有什麼作用?",
+            options: [
+              "保護骨骼肌免受重量、張力、勞損等侵害",
+              "保護皮膚免受紫外光侵害",
+              "成為皮膚最外層的保護，阻礙微生物入侵",
+              "加強結締組織對承受重量、張力、侵害、磨損等能力"
+            ],
+            correctAnswers: ["加強結締組織對承受重量、張力、侵害、磨損等能力"],
+            type: "single",
+            category: "組織學"
+          },
+          {
+            id: 12,
+            question: "開放性或大面積傷口會產生什麼現象?",
+            options: ["骨化 Ossification", "肉芽化 Granulation", "硬化 Sclerosis", "脫水 Dehydration"],
+            correctAnswers: ["肉芽化 Granulation"],
+            type: "single",
+            category: "病理修復"
+          },
+          {
+            id: 13,
+            question: "以下那兩種人體組織具有更大的修復能力?",
+            options: [
+              "上皮組織和結締組織",
+              "軟骨組織和骨骼肌纖維",
+              "平滑肌纖維和肌肉組織",
+              "神經組織和心肌纖維"
+            ],
+            correctAnswers: ["上皮組織和結締組織"],
+            type: "single",
+            category: "組織學"
+          },
+          {
+            id: 14,
+            question: "以下那一個系統負責所有的身體運動?",
+            options: ["肌肉系統", "循環系統", "泌尿系統", "呼吸系統"],
+            correctAnswers: ["肌肉系統"],
+            type: "single",
+            category: "系統生理"
+          },
+          {
+            id: 15,
+            question: "以下那一個系統負責身體的溝通和調控系統?",
+            options: ["消化系統", "神經系統", "生殖系統", "泌尿系統"],
+            correctAnswers: ["神經系統"],
+            type: "single",
+            category: "系統生理"
+          },
+          {
+            id: 16,
+            question: "以下一個系統負責賦予形體及移動的動力?",
+            options: ["淋巴系統", "骨骼系統", "免疫系統", "內分泌系統"],
+            correctAnswers: ["骨骼系統"],
+            type: "single",
+            category: "系統生理"
+          },
+          {
+            id: 17,
+            question: "以下那個是滑液關節的結構?",
+            options: [
+              "只有一條富含膠原蛋白的纖維韌帶固定",
+              "硬骨之間只有軟骨相接，沒有滑液囊",
+              "關節可動，具有關節腔和滑液囊，關節囊包圍整個關節",
+              "硬骨相接之處有軟墊，沒有滑液"
+            ],
+            correctAnswers: ["關節可動，具有關節腔和滑液囊，關節囊包圍整個關節"],
+            type: "single",
+            category: "關節學"
+          },
+          {
+            id: 18,
+            question: "筋膜與肌肉有什麼關係?",
+            options: [
+              "筋膜圍繞並支持肌肉系統，亦提供神經、淋巴管和血管的進出通道。",
+              "筋膜延伸成肌腱或肌腱膜，將肌肉連接到內臟、皮膚或神經組織",
+              "筋膜跟肌肉沒有連接，是完全分開的兩種組織",
+              "筋膜的結構跟肌肉相似，只是位置不同，兩者協作才能促成肢體活動"
+            ],
+            correctAnswers: ["筋膜圍繞並支持肌肉系統，亦提供神經、淋巴管和血管的進出通道。"],
+            type: "single",
+            category: "肌肉系統"
+          },
+          {
+            id: 19,
+            question: "以下那一個是骨折後之骨質重塑過程?",
+            options: [
+              "由骨化Ossification啟動，將軟骨 Cartilage 變成為 硬骨 Bone",
+              "首先由 巨噬細胞 Macrophage 移除壞死的硬骨組織，然後大量製造骨細胞",
+              "由 蝕骨細胞 Osteoclasts 啟動並完成",
+              "迅速增加長骨的長度和厚度，然後軟骨細胞不再分裂"
+            ],
+            correctAnswers: ["首先由 巨噬細胞 Macrophage 移除壞死的硬骨組織，然後大量製造骨細胞"],
+            type: "single",
+            category: "病理修復"
+          },
+          {
+            id: 20,
+            question: "以下那個不是肌肉系統的功能?",
+            options: ["維持姿勢", "產生運動", "穩定關節", "冷卻身體"],
+            correctAnswers: ["冷卻身體"],
+            type: "single",
+            category: "肌肉系統"
+          },
+          {
+            id: 21,
+            question: "自主神經系統包含那兩組神經系統?",
+            options: [
+              "中樞神經及週邊神經",
+              "副交感神經及交感神經",
+              "腦神經及脊神經",
+              "運動神經及感覺神經"
+            ],
+            correctAnswers: ["副交感神經及交感神經"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 22,
+            question: "副交感神經受激勵後會有什麼生理反應?",
+            options: ["心跳加快", "抑制消化", "血管收縮", "尿量減少"],
+            correctAnswers: ["血管收縮"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 23,
+            question: "交感神經受激勵後會有什麼生理反應?",
+            options: ["心跳加快", "促進消化", "血管收縮", "尿量增加"],
+            correctAnswers: ["心跳加快"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 24,
+            question: "神經元之間的連接需倚賴什麼物質?",
+            options: ["電解質", "神經遞質", "水分", "血液"],
+            correctAnswers: ["神經遞質"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 25,
+            question: "人體共有多少對腦神經?",
+            options: ["3", "6", "9", "12"],
+            correctAnswers: ["12"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 26,
+            question: "以下那一個不屬於腦神經?",
+            options: ["嗅覺神經 Olfactory nerve", "三叉神經 Trigeminal nerve", "迷走神經 Vagus nerve", "坐骨神經 Sciatic nerve"],
+            correctAnswers: ["坐骨神經 Sciatic nerve"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 27,
+            question: "在人體神經系統中有多少對脊神經?",
+            options: ["5", "12", "27", "31"],
+            correctAnswers: ["31"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 28,
+            question: "以下那個組織對腦部有保護作用?",
+            options: ["脊髓液", "血液", "神經元", "神經遞質"],
+            correctAnswers: ["脊髓液"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 29,
+            question: "以下那個不是神經遞質?",
+            options: ["Serotonin 血清素", "Endorphins 內啡肽", "GABA 氨基丁酸", "CSF 腦脊髓液"],
+            correctAnswers: ["CSF 腦脊髓液"],
+            type: "single",
+            category: "神經系統"
+          },
+          {
+            id: 30,
+            question: "循環系統是由那兩個系統組成?",
+            options: ["免疫系統及呼吸系統", "血液系統及淋巴系統", "消化系統及泌尿系統", "生殖系統及神經系統"],
+            correctAnswers: ["血液系統及淋巴系統"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 31,
+            question: "以下那些器官和組織負責血液循環系統?",
+            options: ["心臟, 血管, 血液", "腎臟, 尿道, 尿液", "肝臟, 膽管, 膽汁", "淋巴結, 淋巴管, 淋巴液"],
+            correctAnswers: ["心臟, 血管, 血液"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 32,
+            question: "以下那些器官和組織負責淋巴循環系統?",
+            options: ["心臟, 血管, 血液", "腎臟, 尿道, 尿液", "肝臟, 膽管, 膽汁", "淋巴結, 淋巴管, 淋巴液"],
+            correctAnswers: ["淋巴結, 淋巴管, 淋巴液"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 33,
+            question: "肺循環系統是運送缺氧血及含氧血來回那兩個器官?",
+            options: ["心和腎", "肺和腦", "心和腦", "肺和心"],
+            correctAnswers: ["肺和心"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 34,
+            question: "肝門循環系統是從那個器官運送血液去那一個器官?",
+            options: ["由消化道去肝臟", "由肺部去心臟", "由心臟去肝臟", "由腎臟去心臟"],
+            correctAnswers: ["由消化道去肝臟"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 35,
+            question: "微血管有什麼特性?",
+            options: [
+              "血管壁厚，滲透性低",
+              "管道寬闊，紅血球暢順通過",
+              "在血管和組織之間運送養分、水分、氣體和電解質",
+              "沒有基底膜和單層內皮細胞"
+            ],
+            correctAnswers: ["在血管和組織之間運送養分、水分、氣體和電解質"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 36,
+            question: "收縮壓和舒張壓反映什麼情況?",
+            options: [
+              "收縮壓顯示心臟收縮時左心室的壓力",
+              "舒張壓表示心臟放鬆時血管內的壓力",
+              "收縮壓顯示心臟放鬆時血管內的壓力",
+              "舒張壓表示心臟放鬆時左心室內的壓力"
+            ],
+            correctAnswers: ["舒張壓表示心臟放鬆時血管內的壓力"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 37,
+            question: "以下那一個不是血液循環系統的路徑?",
+            options: ["肺循環", "胎兒循環", "微循環", "體循環"],
+            correctAnswers: ["微循環"],
+            type: "single",
+            category: "循環系統"
+          },
+          {
+            id: 38,
+            question: "以下那些身體位置不會找到淋巴結?",
+            options: ["頸部及胸腹部中線", "腋下及肘窩", "背部及臀部", "腹股溝及膕窩"],
+            correctAnswers: ["背部及臀部"],
+            type: "single",
+            category: "淋巴系統"
+          },
+          {
+            id: 39,
+            question: "那一種血球不會存在於淋巴液中?",
+            options: ["T淋巴球", "B淋巴球", "巨噬細胞", "紅血球"],
+            correctAnswers: ["紅血球"],
+            type: "single",
+            category: "淋巴系統"
+          },
+          {
+            id: 40,
+            question: "淋巴結有什麼功能?",
+            options: ["過濾有害物質", "執行免疫系統的專一性防衛功能", "摧毀病原體", "以上皆是"],
+            correctAnswers: ["以上皆是"],
+            type: "single",
+            category: "淋巴系統"
+          }
         ];
 
-        // --- 程式邏輯 ---
-        let currentCardIndex = 0;
-        let studyQueue = []; // 待複習隊列
-        let isFlipped = false;
+        function QuizApp() {
+          const [activeQuestions, setActiveQuestions] = useState(fullQuizData);
+          const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+          const [selectedOptions, setSelectedOptions] = useState([]);
+          const [showResult, setShowResult] = useState(false);
+          const [score, setScore] = useState(0);
+          const [quizCompleted, setQuizCompleted] = useState(false);
+          
+          const [wrongQuestionIds, setWrongQuestionIds] = useState([]);
+          const [isRetryMode, setIsRetryMode] = useState(false);
 
-        const cardElement = document.getElementById('card');
-        const questionText = document.getElementById('question-text');
-        const answerText = document.getElementById('answer-text');
-        const progressText = document.getElementById('progress');
+          const currentQuestion = activeQuestions[currentQuestionIndex];
 
-        // 初始化：打亂題目順序
-        function init() {
-            // 創建一個索引數組 [0, 1, 2, ... length-1]
-            studyQueue = Array.from({length: database.length}, (_, i) => i);
-            shuffleArray(studyQueue);
-            loadCard();
-        }
+          const handleOptionClick = (option) => {
+            if (showResult) return;
 
-        // 洗牌演算法
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        // 載入當前卡片
-        function loadCard() {
-            if (studyQueue.length === 0) {
-                // 如果全部溫完，重新開始
-                alert("恭喜！所有題目已溫習一輪。將重新洗牌開始。");
-                init();
-                return;
-            }
-
-            const dbIndex = studyQueue[0];
-            const data = database[dbIndex];
-            
-            // 重置卡片狀態
-            isFlipped = false;
-            cardElement.classList.remove('flipped');
-            
-            // 延遲一點點更新文字，讓翻轉動畫看起來更自然（如果是連續翻頁）
-            setTimeout(() => {
-                questionText.textContent = data.q;
-                answerText.textContent = data.a;
-                progressText.textContent = `剩餘題目: ${studyQueue.length}`;
-            }, 200);
-        }
-
-        // 翻轉卡片
-        function flipCard() {
-            isFlipped = !isFlipped;
-            if (isFlipped) {
-                cardElement.classList.add('flipped');
+            if (currentQuestion.type === 'single') {
+              setSelectedOptions([option]);
             } else {
-                cardElement.classList.remove('flipped');
+              if (selectedOptions.includes(option)) {
+                setSelectedOptions(selectedOptions.filter(item => item !== option));
+              } else {
+                setSelectedOptions([...selectedOptions, option]);
+              }
             }
-        }
+          };
 
-        // 處理按鈕點擊
-        function handleNext(known) {
-            event.stopPropagation(); // 防止觸發翻卡
+          const handleSubmit = () => {
+            if (selectedOptions.length === 0) return;
 
-            const currentQuestionIndex = studyQueue[0];
+            const isCorrect = 
+              selectedOptions.length === currentQuestion.correctAnswers.length &&
+              selectedOptions.every(opt => currentQuestion.correctAnswers.includes(opt));
+
+            if (isCorrect) {
+              setScore(score + 1);
+              if (wrongQuestionIds.includes(currentQuestion.id)) {
+                setWrongQuestionIds(prev => prev.filter(id => id !== currentQuestion.id));
+              }
+            } else {
+              if (!wrongQuestionIds.includes(currentQuestion.id)) {
+                setWrongQuestionIds(prev => [...prev, currentQuestion.id]);
+              }
+            }
+
+            setShowResult(true);
+          };
+
+          const handleNext = () => {
+            if (currentQuestionIndex < activeQuestions.length - 1) {
+              setCurrentQuestionIndex(currentQuestionIndex + 1);
+              setSelectedOptions([]);
+              setShowResult(false);
+            } else {
+              setQuizCompleted(true);
+            }
+          };
+
+          const handleRestartFull = () => {
+            setActiveQuestions(fullQuizData);
+            setCurrentQuestionIndex(0);
+            setSelectedOptions([]);
+            setShowResult(false);
+            setScore(0);
+            setQuizCompleted(false);
+            setWrongQuestionIds([]);
+            setIsRetryMode(false);
+          };
+
+          const handleRetryWrong = () => {
+            const wrongQuestions = fullQuizData.filter(q => wrongQuestionIds.includes(q.id));
             
-            // 移除當前題目
-            studyQueue.shift();
+            setActiveQuestions(wrongQuestions);
+            setCurrentQuestionIndex(0);
+            setSelectedOptions([]);
+            setShowResult(false);
+            setScore(0);
+            setQuizCompleted(false);
+            setIsRetryMode(true);
+          };
 
-            if (!known) {
-                // 如果不熟，把這題重新放回隊列的隨機位置（或者末尾）
-                // 這裡我們把它放到隊列的一半位置之後，保證過一會兒會再出現
-                const insertIndex = Math.floor(Math.random() * studyQueue.length);
-                studyQueue.splice(insertIndex, 0, currentQuestionIndex);
-            }
+          if (quizCompleted) {
+            const isPerfect = wrongQuestionIds.length === 0;
 
-            loadCard();
+            return (
+              <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center font-sans">
+                <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
+                  <div className="text-center mb-8">
+                    {isPerfect ? (
+                      <Award className="w-20 h-20 text-yellow-500 mx-auto mb-4" />
+                    ) : (
+                      <AlertCircle className="w-20 h-20 text-orange-500 mx-auto mb-4" />
+                    )}
+                    
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                      {isRetryMode ? "重測結束" : "測驗完成!"}
+                    </h2>
+                    
+                    <p className="text-gray-600">
+                      {isPerfect 
+                        ? "太棒了！您已經掌握了所有題目。" 
+                        : `您還有 ${wrongQuestionIds.length} 題需要加強。`}
+                    </p>
+                  </div>
+
+                  <div className="bg-blue-50 rounded-xl p-6 mb-8 text-center">
+                    <p className="text-sm text-blue-600 font-semibold uppercase tracking-wide">本次得分</p>
+                    <p className="text-5xl font-bold text-blue-800 mt-2">{score} / {activeQuestions.length}</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {!isPerfect && (
+                      <button
+                        onClick={handleRetryWrong}
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
+                      >
+                        <RefreshCw size={20} />
+                        只重測錯誤題目 ({wrongQuestionIds.length} 題)
+                      </button>
+                    )}
+
+                    <button
+                      onClick={handleRestartFull}
+                      className={`w-full font-bold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 ${
+                        isPerfect 
+                          ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md" 
+                          : "bg-white border-2 border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <BookOpen size={20} />
+                      {isPerfect ? "重新完整測驗" : "放棄進度，重新完整測驗"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="min-h-screen bg-gray-100 py-8 px-4 font-sans">
+              <div className="max-w-3xl mx-auto">
+                <div className="bg-white rounded-t-2xl shadow-sm p-6 border-b border-gray-100 flex justify-between items-center">
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      <BookOpen className="text-blue-600" size={24} />
+                      {isRetryMode ? "錯題重測模式" : "A&P Quiz - Lesson 1-6"}
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {isRetryMode ? "專注於您之前答錯的題目" : "解剖學與生理學基礎測驗"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-500">進度</div>
+                    <div className="font-bold text-blue-600 text-lg">
+                      {currentQuestionIndex + 1} <span className="text-gray-400 text-sm">/ {activeQuestions.length}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full bg-gray-200 h-2">
+                  <div 
+                    className={`h-2 transition-all duration-300 ease-out ${isRetryMode ? 'bg-orange-500' : 'bg-blue-600'}`}
+                    style={{ width: `${((currentQuestionIndex + 1) / activeQuestions.length) * 100}%` }}
+                  ></div>
+                </div>
+
+                <div className="bg-white rounded-b-2xl shadow-lg p-6 md:p-8 min-h-[400px] flex flex-col">
+                  <div className="mb-6">
+                    <div className="flex gap-2 mb-3">
+                      <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                        {currentQuestion.category}
+                      </span>
+                      {currentQuestion.type === 'multiple' && (
+                        <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full">
+                          多重選擇
+                        </span>
+                      )}
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 leading-relaxed">
+                      {currentQuestion.question}
+                    </h2>
+                    {currentQuestion.type === 'multiple' && (
+                      <p className="text-sm text-gray-500 mt-2">(請選擇所有正確答案)</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 flex-grow">
+                    {currentQuestion.options.map((option, index) => {
+                      const isSelected = selectedOptions.includes(option);
+                      const isCorrectAnswer = currentQuestion.correctAnswers.includes(option);
+                      
+                      let optionClass = "w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between group ";
+                      
+                      if (showResult) {
+                        if (isCorrectAnswer) {
+                          optionClass += "bg-green-50 border-green-500 text-green-800";
+                        } else if (isSelected && !isCorrectAnswer) {
+                          optionClass += "bg-red-50 border-red-500 text-red-800";
+                        } else {
+                          optionClass += "bg-gray-50 border-gray-100 text-gray-400 opacity-60";
+                        }
+                      } else {
+                        if (isSelected) {
+                          optionClass += "bg-blue-50 border-blue-500 text-blue-800 shadow-sm";
+                        } else {
+                          optionClass += "bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700";
+                        }
+                      }
+
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => handleOptionClick(option)}
+                          disabled={showResult}
+                          className={optionClass}
+                        >
+                          <span className="flex items-center gap-3">
+                            <div className={`text-gray-400 ${isSelected ? 'text-blue-600' : ''} ${showResult && isCorrectAnswer ? 'text-green-600' : ''} ${showResult && isSelected && !isCorrectAnswer ? 'text-red-600' : ''}`}>
+                              {currentQuestion.type === 'multiple' ? (
+                                isSelected ? <CheckSquare size={20} /> : <Square size={20} />
+                              ) : (
+                                isSelected ? <Disc size={20} /> : <Circle size={20} />
+                              )}
+                            </div>
+                            
+                            {option}
+                          </span>
+                          
+                          {showResult && isCorrectAnswer && (
+                            <CheckCircle className="text-green-600" size={20} />
+                          )}
+                          {showResult && isSelected && !isCorrectAnswer && (
+                            <XCircle className="text-red-600" size={20} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-gray-100">
+                    {!showResult ? (
+                      <button
+                        onClick={handleSubmit}
+                        disabled={selectedOptions.length === 0}
+                        className={`w-full py-3 px-6 rounded-xl font-bold text-lg transition-all ${
+                          selectedOptions.length > 0 
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5' 
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        提交答案
+                      </button>
+                    ) : (
+                      <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        {(() => {
+                          const isCorrect = 
+                            selectedOptions.length === currentQuestion.correctAnswers.length &&
+                            selectedOptions.every(opt => currentQuestion.correctAnswers.includes(opt));
+                          
+                          return (
+                            <div className="space-y-4">
+                              <div className={`p-4 rounded-lg flex items-start gap-3 ${
+                                isCorrect ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                              }`}>
+                                {isCorrect ? (
+                                  <CheckCircle className="shrink-0 mt-0.5" size={20} />
+                                ) : (
+                                  <XCircle className="shrink-0 mt-0.5" size={20} />
+                                )}
+                                <div>
+                                  <p className="font-bold">
+                                    {isCorrect ? '答對了！' : '答錯了！'}
+                                  </p>
+                                  <p className="text-sm mt-1 opacity-90">
+                                    正確答案是：
+                                    <ul className="list-disc list-inside mt-1">
+                                      {currentQuestion.correctAnswers.map((ans, i) => (
+                                        <li key={i}>{ans}</li>
+                                      ))}
+                                    </ul>
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* --- 新增：顯示書中資訊/解釋 --- */}
+                              {currentQuestion.explanation && (
+                                <div className="p-4 rounded-lg bg-blue-50 border border-blue-100 text-blue-900 flex items-start gap-3">
+                                  <Info className="shrink-0 mt-0.5 text-blue-600" size={20} />
+                                  <div>
+                                    <p className="font-bold text-blue-800 mb-1">書中資訊 / 詳解：</p>
+                                    <p className="text-sm leading-relaxed text-blue-800/90">
+                                      {currentQuestion.explanation}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                              {/* -------------------------------- */}
+                            </div>
+                          );
+                        })()}
+                        
+                        <button
+                          onClick={handleNext}
+                          className="w-full mt-4 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                        >
+                          {currentQuestionIndex < activeQuestions.length - 1 ? '下一題' : '查看結果'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
         }
 
-        // 啟動
-        init();
-
+        const root = createRoot(document.getElementById('root'));
+        root.render(<QuizApp />);
     </script>
 </body>
 </html>
