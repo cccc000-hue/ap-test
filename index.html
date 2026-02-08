@@ -256,7 +256,7 @@
         function renderQuestion() {
             const q = state.activeQuestions[state.currentIndex];
             
-            els.headerTitle.textContent = state.isRetryMode ? "錯題重測模式" : "A&P Quiz - Lesson 1-6";
+            els.headerTitle.textContent = state.isRetryMode ? "錯題重測模式" : "A&P Quiz";
             els.headerSubtitle.textContent = state.isRetryMode ? "專注於您之前答錯的題目" : "解剖學與生理學基礎測驗";
             els.progressBar.className = `h-2 transition-all duration-300 ease-out ${state.isRetryMode ? 'bg-orange-500' : 'bg-blue-600'}`;
             els.progressBar.style.width = `${((state.currentIndex + 1) / state.activeQuestions.length) * 100}%`;
